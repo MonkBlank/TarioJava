@@ -1,0 +1,155 @@
+package com.mygdx.game;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+public class MarioGame extends ApplicationAdapter implements InputProcessor {
+    SpriteBatch batch;
+    Texture playerTexture;
+    Player player;
+
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        playerTexture = new Texture("mario.png"); // Load player sprite (place a mario.png file in assets)
+        player = new Player(playerTexture, 50, 50); // Initialize player at (50, 50)
+
+        Gdx.input.setInputProcessor(this); // Set input processor
+    }
+
+    @Override
+    public void render() {
+        // Clear the screen
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Draw the player
+        batch.begin();
+        player.draw(batch);
+        batch.end();
+
+        // Update player logic
+        player.update(Gdx.graphics.getDeltaTime());
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        playerTexture.dispose();
+    }
+
+    // Input handling
+    @Override
+    public boolean keyDown(int keycode) {
+        if (keycode == com.badlogic.gdx.Input.Keys.LEFT) {
+            player.moveLeft();
+        } else if (keycode == com.badlogic.gdx.Input.Keys.RIGHT) {
+            player.moveRight();
+        } else if (keycode == com.badlogic.gdx.Input.Keys.SPACE) {
+            player.jump();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        if (keycode == com.badlogic.gdx.Input.Keys.LEFT || keycode == com.badlogic.gdx.Input.Keys.RIGHT) {
+            player.stopMoving();
+        }
+        return true;
+    }
+
+    // Other required InputProcessor methods (unused)
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        return false;
+    }
+}
+package com.mygdx.game;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+
+public class Player {
+    private Texture texture;
+    private Vector2 position;
+    private Vector2 velocity;
+    private boolean isGrounded;
+
+    public Player(Texture texture, float x, float y) {
+        this.texture = texture;
+        this.position = new Vector2(x, y);
+        this.velocity = new Vector2(0, 0);
+        this.isGrounded = false;
+    }
+
+    public void update(float deltaTime) {
+        // Apply gravity
+        if (!isGrounded) {
+            velocity.y -= 50f * deltaTime; // Gravity
+        }
+
+        // Update position
+        position.add(velocity.x * deltaTime, velocity.y * deltaTime);
+
+        // Simulate ground collision (for simplicity)
+        if (position.y < 50) {
+            position.y = 50;
+            isGrounded = true;
+            velocity.y = 0;
+        }
+    }
+
+    public void draw(SpriteBatch batch) {
+        batch.draw(texture, position.x, position.y);
+    }
+
+    public void jump() {
+        if (isGrounded) {
+            velocity.y = 300f; // Jump force
+            isGrounded = false;
+        }
+    }
+
+    public void moveLeft() {
+        velocity.x = -200f;
+    }
+
+    public void moveRight() {
+        velocity.x = 200f;
+    }
+
+    public void stopMoving() {
+        velocity.x = 0;
+    }
+}
